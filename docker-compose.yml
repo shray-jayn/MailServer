@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  pbd_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pbd_server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: "production"
+      PORT: "3001"
+      # While testing, respond fast without SMTP
+      DISABLE_EMAIL: "true"
+      # CORS allow list (comma separated)
+      ALLOWED_ORIGIN: "https://patioblindsdirect.com,https://www.patioblindsdirect.com"
+
+      # When you’re ready to send email, set these and remove DISABLE_EMAIL
+      # MAIL_HOST: "mail.crunchstudy.com"
+      # MAIL_PORT: "587"
+      # MAIL_USER: "no-reply@patioblindsdirect.com"
+      # MAIL_PASS: "*****"
+      # FROM_NAME: "Patio Blinds Direct"
+      # LEADS_TO: "joe@patioblindsdirect.com"
+
+    networks:
+      - pbd_net
+    # If you want Portainer to wait for health before marking “healthy”
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # This is just to show the shared network. Your tunnel is already defined elsewhere.
+  # pbd_api_tunnel:
+  #   image: cloudflare/cloudflared:latest
+  #   networks: [pbd_net]
+
+networks:
+  pbd_net:
+    external: true
